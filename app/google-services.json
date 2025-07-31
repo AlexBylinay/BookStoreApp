@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "421071535813",
+    "project_id": "projekt34445",
+    "storage_bucket": "projekt34445.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:421071535813:android:01e4e8d1a30dbc9f80faac",
+        "android_client_info": {
+          "package_name": "pl.alexbul.bookstoreapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDHrB1GOdSIRmzDz9axvscTe7xZUTMwgbc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
