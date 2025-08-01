@@ -3,10 +3,15 @@ package pl.alexbul.bookstoreapp
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -50,7 +55,22 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
       //  enableEdgeToEdge()
         setContent {
-           MainScreen()
+            val fb = Firebase.firestore
+            val fs = Firebase.storage.reference.child("images")
+            val launcher = rememberLauncherForActivityResult(
+                contract = ActivityResultContracts.PickVisualMedia()) {
+                uri ->
+                if (uri ==null) return@rememberLauncherForActivityResult
+                val task = fs.child("cat.jpg").putBytes(bitmapToByteArrayFromPhone(this, uri))
+                task.addOnSuccessListener {
+                        uploadTask ->
+                    uploadTask.metadata?.reference?.downloadUrl?.addOnCompleteListener {uriTask ->
+                        saveBook(fb, uriTask.result.toString() )}
+                }
+            }
+           MainScreen{launcher.launch(PickVisualMediaRequest(
+               mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+           ))}
         }
     }
 }
@@ -64,7 +84,7 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(Onclick: ()-> Unit  ) {
     val context = LocalContext.current
     val fb = Firebase.firestore
     val fs = Firebase.storage.reference.child("images")
@@ -149,12 +169,7 @@ task.addOnSuccessListener {
                 .padding(10.dp),
             onClick = {
 
-                val task = fs.child("cat.jpg").putBytes(bitmapToByteArray(context))
-                task.addOnSuccessListener {
-                        uploadTask ->
-                    uploadTask.metadata?.reference?.downloadUrl?.addOnCompleteListener {uriTask ->
-                        saveBook(fb, uriTask.result.toString() )}
-                }
+             Onclick()
             }) {
             Text(
                 text = "Open Photo",
@@ -170,6 +185,16 @@ val boas = ByteArrayOutputStream()
     bitMap.compress(Bitmap.CompressFormat.JPEG, 100, boas)
     return boas.toByteArray()
 }
+
+private fun bitmapToByteArrayFromPhone( context: android.content.Context, uri:Uri): ByteArray   {
+    val inputStream = context.contentResolver.openInputStream(uri)
+    val bitMap = BitmapFactory.decodeStream(inputStream)
+    val boas = ByteArrayOutputStream()
+    bitMap.compress(Bitmap.CompressFormat.JPEG, 100, boas)
+    return boas.toByteArray()
+}
+
+
 
 private fun saveBook (fb: FirebaseFirestore, url: String){
     fb.collection("books").document().set(Book (
