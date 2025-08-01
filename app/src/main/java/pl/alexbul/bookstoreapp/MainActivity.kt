@@ -143,6 +143,23 @@ task.addOnSuccessListener {
             text = "Add book",
           //  modifier = modifier
         )}
+        Button(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
+            onClick = {
+
+                val task = fs.child("cat.jpg").putBytes(bitmapToByteArray(context))
+                task.addOnSuccessListener {
+                        uploadTask ->
+                    uploadTask.metadata?.reference?.downloadUrl?.addOnCompleteListener {uriTask ->
+                        saveBook(fb, uriTask.result.toString() )}
+                }
+            }) {
+            Text(
+                text = "Open Photo",
+                //  modifier = modifier
+            )}
     }
 
 }
