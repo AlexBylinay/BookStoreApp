@@ -1,11 +1,15 @@
 package pl.alexbul.bookstoreapp
 
+import android.annotation.SuppressLint
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -24,14 +29,21 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import coil.compose.AsyncImage
 import com.google.firebase.Firebase
+import com.google.firebase.database.core.Context
+import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
 import pl.alexbul.bookstoreapp.data.Book
 import pl.alexbul.bookstoreapp.ui.theme.BookStoreAppTheme
+import java.io.ByteArrayOutputStream
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -53,7 +65,10 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 
 @Composable
 fun MainScreen() {
+    val context = LocalContext.current
     val fb = Firebase.firestore
+    val fs = Firebase.storage.reference.child("images")
+
     val list = remember {
         mutableStateOf(emptyList<Book>())
     }
@@ -81,13 +96,30 @@ fun MainScreen() {
         {
             items(list.value){ book ->
                 Card(
-                    modifier = Modifier.fillMaxWidth().
-                    padding(10.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(10.dp),
                 ) {
-                    Text(
-                        text = book.name,
-                        modifier = Modifier.fillMaxWidth().wrapContentWidth()
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+
+                       ) {
+                        AsyncImage(
+                            model = book.imageUrl,
+                            contentDescription = null,
+                            modifier = Modifier.height(70.dp).width(70.dp)
                         )
+
+
+                        Text(
+                            text = book.name,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .wrapContentWidth()
+                        )
+                    }
                 }
 
             }
@@ -95,17 +127,17 @@ fun MainScreen() {
         }
         Spacer(modifier = Modifier.height(10.dp))
         Button(
-            modifier = Modifier.fillMaxWidth().
-            padding(10.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(10.dp),
             onClick = {
-                fb.collection("books").document().set(Book (
-                    "Raccon",
-                    "raccoon",
-                    "900",
-                    "true",
-                    "l"),)
 
-
+                val task = fs.child("cat.jpg").putBytes(bitmapToByteArray(context))
+task.addOnSuccessListener {
+        uploadTask ->
+    uploadTask.metadata?.reference?.downloadUrl?.addOnCompleteListener {uriTask ->
+        saveBook(fb, uriTask.result.toString() )}
+}
             }) {
             Text(
             text = "Add book",
@@ -114,6 +146,24 @@ fun MainScreen() {
     }
 
 }
+
+private fun bitmapToByteArray( context: android.content.Context): ByteArray   {
+     val bitMap = BitmapFactory.decodeResource(context.resources, R.drawable.cat)
+val boas = ByteArrayOutputStream()
+    bitMap.compress(Bitmap.CompressFormat.JPEG, 100, boas)
+    return boas.toByteArray()
+}
+
+private fun saveBook (fb: FirebaseFirestore, url: String){
+    fb.collection("books").document().set(Book (
+        "Raccon",
+        "raccoon",
+        "900",
+        "true",
+        url),)
+
+}
+
 
 @Preview(showBackground = true)
 @Composable
