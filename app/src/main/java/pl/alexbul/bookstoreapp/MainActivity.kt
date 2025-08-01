@@ -200,7 +200,7 @@ private fun saveBook(fb: FirebaseFirestore, url: String) {
         Book(
             "Raccon",
             "raccoon",
-            "900",
+            "90067",
             "true",
             url
         ),
