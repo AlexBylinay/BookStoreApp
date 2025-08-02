@@ -38,6 +38,7 @@ import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.firestore
 import com.google.firebase.storage.storage
+import pl.alexbul.bookstoreapp.castomUi.login.LoginScreen
 import pl.alexbul.bookstoreapp.data.Book
 import pl.alexbul.bookstoreapp.ui.theme.BookStoreAppTheme
 import java.io.ByteArrayOutputStream
@@ -47,26 +48,27 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         //  enableEdgeToEdge()
         setContent {
-            val fb = Firebase.firestore
-            val fs = Firebase.storage.reference.child("images")
-            val launcher = rememberLauncherForActivityResult(
-                contract = ActivityResultContracts.PickVisualMedia()
-            ) { uri ->
-                if (uri == null) return@rememberLauncherForActivityResult
-                val task = fs.child("cat.jpg").putBytes(bitmapToByteArrayFromPhone(this, uri))
-                task.addOnSuccessListener { uploadTask ->
-                    uploadTask.metadata?.reference?.downloadUrl?.addOnCompleteListener { uriTask ->
-                        saveBook(fb, uriTask.result.toString())
-                    }
-                }
-            }
-            MainScreen {
-                launcher.launch(
-                    PickVisualMediaRequest(
-                        mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
-                    )
-                )
-            }
+            LoginScreen()
+            /*  val fb = Firebase.firestore
+              val fs = Firebase.storage.reference.child("images")
+              val launcher = rememberLauncherForActivityResult(
+                  contract = ActivityResultContracts.PickVisualMedia()
+              ) { uri ->
+                  if (uri == null) return@rememberLauncherForActivityResult
+                  val task = fs.child("cat.jpg").putBytes(bitmapToByteArrayFromPhone(this, uri))
+                  task.addOnSuccessListener { uploadTask ->
+                      uploadTask.metadata?.reference?.downloadUrl?.addOnCompleteListener { uriTask ->
+                          saveBook(fb, uriTask.result.toString())
+                      }
+                  }
+              }
+              MainScreen {
+                  launcher.launch(
+                      PickVisualMediaRequest(
+                          mediaType = ActivityResultContracts.PickVisualMedia.ImageOnly
+                      )
+                  )
+              }*/
         }
     }
 }
